@@ -62,7 +62,10 @@ const char GATE_CONTROL_page[] PROGMEM = R"=====(
 
 <body>
     <h1 style="text-align: center;">Կառավարել դարպասը</h1>
-    <p style="text-align: center;">Դարպասի ընթացիկ վիճակը` <b id="state">{{state}}</b></p>
+    <div style="text-align: center;">
+        <p>Դարպասի ընթացիկ վիճակը</p>
+        <p style="font-size:24px"><b id="state">{{state}}</b></p>
+    </div>
     <div class="container">
         <button class="btn open" onclick="location.href='/open'">Բացել</button>
         <button class="btn pause" onclick="location.href='/pause'">Դադարեցնել</button>
@@ -205,8 +208,13 @@ void handleGateControl()
     {
         html = GATE_CONTROL_page;
         html.replace("{{state}}", gate.getStateText());
-        server.send(200, "text/html", html);
     }
+
+    // Add no-cache headers
+    server.sendHeader("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0");
+    server.sendHeader("Pragma", "no-cache");
+    server.sendHeader("Expires", "-1");
+    server.send(200, "text/html", html);
 }
 
 // Serve the Wi-Fi Configuration page
@@ -294,11 +302,14 @@ void setup()
     server.on("/save_wifi", HTTP_POST, handleSaveWifi); // Save Wi-Fi settings
 
     server.on("/open", []()
-              { gate.setState(GATE_OPEN); handleGateControl(); });
+              { gate.setState(GATE_OPEN); server.sendHeader("Location", "/");
+        server.send(303); });
     server.on("/pause", []()
-              { gate.setState(GATE_PAUSE); handleGateControl(); });
+              { gate.setState(GATE_PAUSE); server.sendHeader("Location", "/");
+        server.send(303); });
     server.on("/close", []()
-              { gate.setState(GATE_CLOSE); handleGateControl(); });
+              { gate.setState(GATE_CLOSE); server.sendHeader("Location", "/");
+        server.send(303); });
 
     // Start the web server
     server.begin();
