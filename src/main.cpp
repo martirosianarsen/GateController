@@ -81,7 +81,7 @@ const char GATE_CONTROL_page[] PROGMEM = R"=====(
                 stateElement.innerText = 'Բաց է'
             } else if (stateText === 'paused') {
                 stateElement.style.color = 'black';
-                stateElement.innerText = 'Դադարեցված'
+                stateElement.innerText = 'Դադարեցված է'
             } else if (stateText === 'closed') {
                 stateElement.style.color = 'red';
                 stateElement.innerText = 'Փակ է'
