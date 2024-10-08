@@ -278,6 +278,7 @@ void setupWiFi()
     else
     {
         saveWiFiCredentials("Senso Lab Technologies", "your_password");
+        delay(2000);
         ESP.restart();
         // startAccessPoint(); // Start Access Point mode if no credentials are available
     }
