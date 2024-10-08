@@ -54,7 +54,7 @@ void GateControl::setState(GateState state)
 
 void GateControl::update()
 {
-    // Check if 200ms have passed since the action started
+    // Check if 400ms have passed since the action started
     if (actionInProgress && millis() - lastActionTime >= 400)
     {
         // Set all pins back to HIGH to stop the action

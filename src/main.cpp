@@ -1,8 +1,11 @@
 #include <WiFi.h>
 #include <WebServer.h>
 #include <Preferences.h>
-
+#include "Timeout.h"
 #include "gate_control.h"
+
+// Create a Timeout object for handling the delay (5 seconds)
+Timeout toPauseTimeout(22);
 
 // Initialize Preferences for NVS
 Preferences preferences;
@@ -72,7 +75,9 @@ const char GATE_CONTROL_page[] PROGMEM = R"=====(
         <button class="btn close" onclick="location.href='/close'">Փակել</button>
     </div>
     <script>
-        function updateStateColor() {
+
+
+       function updateStateColor() {
             let stateElement = document.getElementById('state');
             let stateText = stateElement.innerText.toLowerCase();
 
@@ -302,14 +307,11 @@ void setup()
     server.on("/save_wifi", HTTP_POST, handleSaveWifi); // Save Wi-Fi settings
 
     server.on("/open", []()
-              { gate.setState(GATE_OPEN); server.sendHeader("Location", "/");
-        server.send(303); });
+              { gate.setState(GATE_OPEN); toPauseTimeout.start(); server.sendHeader("Location", "/"); server.send(303); });
     server.on("/pause", []()
-              { gate.setState(GATE_PAUSE); server.sendHeader("Location", "/");
-        server.send(303); });
+              { gate.setState(GATE_PAUSE); server.sendHeader("Location", "/"); server.send(303); });
     server.on("/close", []()
-              { gate.setState(GATE_CLOSE); server.sendHeader("Location", "/");
-        server.send(303); });
+              { gate.setState(GATE_CLOSE); toPauseTimeout.start(); server.sendHeader("Location", "/"); server.send(303); });
 
     // Start the web server
     server.begin();
@@ -319,5 +321,11 @@ void setup()
 void loop()
 {
     server.handleClient(); // Handle web server requests
+                           // Continuously check if the timeout has expired
+    if (toPauseTimeout.hasExpired())
+    {
+        gate.setState(GATE_PAUSE); // Automatically set gate to PAUSE after timeout expires
+    }
+
     gate.update();
 }
